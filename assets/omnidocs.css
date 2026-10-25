@@ -1,0 +1,197 @@
+/*
+ * omnidocs.css - the layout of a manual read as one page, and the parts
+ * omnidocs.js drives: the sidebar with its table of contents (sticking while
+ * the page scrolls, its own scroll when taller than the screen, a drawer on
+ * a phone), the search palette, the code frames and tabs, the callouts and
+ * version badges. Structure only: a site gives its colours and fonts through
+ * these properties (on :root, or on .omnidocs-layout):
+ *
+ *   --omnidocs-bg         the page's background              Canvas
+ *   --omnidocs-fg         its text                           CanvasText
+ *   --omnidocs-muted      secondary text                     color-mix(fg 60%)
+ *   --omnidocs-line       rules and borders                  color-mix(fg 15%)
+ *   --omnidocs-accent     the current entry, the marks       LinkText
+ *   --omnidocs-soft       a quiet background (code, hits)    color-mix(fg 5%)
+ *   --omnidocs-top        how far below the top the sidebar sticks (a fixed header's height)   1rem
+ *   --omnidocs-sidebar    the sidebar's width                17rem
+ *   --omnidocs-drawer-top where the drawer starts on a phone (under a fixed header)    0
+ *   --omnidocs-breakpoint (fixed) 64rem: below, the sidebar is a drawer
+ *   --omnidocs-mono       the code's font                    ui-monospace, monospace
+ */
+:where(:root) {
+    --omnidocs-bg: Canvas;
+    --omnidocs-fg: CanvasText;
+    --omnidocs-muted: color-mix(in srgb, var(--omnidocs-fg) 62%, var(--omnidocs-bg));
+    --omnidocs-line: color-mix(in srgb, var(--omnidocs-fg) 16%, var(--omnidocs-bg));
+    --omnidocs-soft: color-mix(in srgb, var(--omnidocs-fg) 5%, var(--omnidocs-bg));
+    --omnidocs-accent: LinkText;
+    --omnidocs-top: 1rem;
+    --omnidocs-sidebar: 17rem;
+    --omnidocs-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+/* ---- the layout: the sidebar beside the page ------------------------------------- */
+
+.omnidocs-layout {
+    display: grid;
+    grid-template-columns: var(--omnidocs-sidebar) minmax(0, 1fr);
+    gap: clamp(1.5rem, 3vw, 3rem);
+    align-items: start;
+}
+.omnidocs-content { min-width: 0; }
+.omnidocs-content :target, .omnidocs-content [id] { scroll-margin-top: calc(var(--omnidocs-top) + .5rem); }
+
+.omnidocs-sidebar {
+    position: sticky;
+    top: var(--omnidocs-top);
+    max-height: calc(100vh - var(--omnidocs-top) - 1rem);
+    max-height: calc(100dvh - var(--omnidocs-top) - 1rem);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    padding-bottom: 1rem;
+}
+
+.omnidocs-toc ul { list-style: none; margin: 0; padding: 0; }
+.omnidocs-toc > ul > li + li { margin-top: .1rem; }
+.omnidocs-toc a {
+    display: block;
+    padding: .28rem .6rem;
+    border-left: 2px solid transparent;
+    color: var(--omnidocs-muted);
+    text-decoration: none;
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+}
+.omnidocs-toc a:hover { color: var(--omnidocs-fg); }
+.omnidocs-toc > ul > li > a { color: var(--omnidocs-fg); font-weight: 600; }
+.omnidocs-toc ul ul a { padding-left: 1.4rem; font-size: .92em; }
+/* A section's own entries show while it is read (and all of them without a script). */
+.omnidocs-toc ul ul { display: none; }
+.omnidocs-toc li.is-open > ul, html:not(.omnidocs-ready) .omnidocs-toc ul ul { display: block; }
+.omnidocs-toc a.is-current {
+    color: var(--omnidocs-accent);
+    border-left-color: var(--omnidocs-accent);
+    background: var(--omnidocs-soft);
+}
+
+.omnidocs-toc-toggle { display: none; }
+
+@media (max-width: 64rem) {
+    .omnidocs-layout { grid-template-columns: minmax(0, 1fr); }
+    .omnidocs-sidebar {
+        position: fixed;
+        z-index: 60;
+        inset: var(--omnidocs-drawer-top, 0) auto 0 0;
+        width: min(86vw, 22rem);
+        max-height: none;
+        padding: 1rem;
+        background: var(--omnidocs-bg);
+        border-right: 1px solid var(--omnidocs-line);
+        box-shadow: 0 0 2rem rgb(0 0 0 / .2);
+        transform: translateX(-105%);
+        visibility: hidden;
+        transition: transform .2s ease, visibility 0s .2s;
+    }
+    .omnidocs-sidebar.is-open { transform: none; visibility: visible; transition: transform .2s ease; }
+    html.omnidocs-toc-open { overflow: hidden; }
+    .omnidocs-toc-toggle {
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        position: sticky;
+        top: var(--omnidocs-top);
+        z-index: 40;
+        margin: 0 0 1rem;
+        padding: .5rem .85rem;
+        font: inherit;
+        color: var(--omnidocs-fg);
+        background: var(--omnidocs-bg);
+        border: 1px solid var(--omnidocs-line);
+        border-radius: .4rem;
+        cursor: pointer;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .omnidocs-sidebar, .omnidocs-sidebar.is-open { transition: none; }
+}
+
+/* ---- the search trigger and its palette --------------------------------------------- */
+
+[data-omnidocs-search] kbd, .omnidocs-palette kbd {
+    font: inherit;
+    font-size: .8em;
+    padding: .05rem .35rem;
+    border: 1px solid var(--omnidocs-line);
+    border-bottom-width: 2px;
+    border-radius: .3rem;
+    color: var(--omnidocs-muted);
+    background: var(--omnidocs-bg);
+    white-space: nowrap;
+}
+.omnidocs-palette { position: fixed; inset: 0; z-index: 100; }
+.omnidocs-palette[hidden] { display: none; }
+.omnidocs-backdrop { position: absolute; inset: 0; background: rgb(0 0 0 / .35); }
+.omnidocs-panel {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(42rem, calc(100vw - 2rem));
+    max-height: min(36rem, calc(100vh - 6rem));
+    margin: 4rem auto 0;
+    color: var(--omnidocs-fg);
+    background: var(--omnidocs-bg);
+    border: 1px solid var(--omnidocs-line);
+    border-radius: .6rem;
+    box-shadow: 0 1.5rem 4rem rgb(0 0 0 / .3);
+    overflow: hidden;
+}
+.omnidocs-field { display: flex; align-items: center; gap: .5rem; padding: .75rem 1rem; border-bottom: 1px solid var(--omnidocs-line); }
+.omnidocs-field input { flex: 1; min-width: 0; font: inherit; font-size: 1.1rem; color: inherit; background: transparent; border: 0; outline: 0; }
+.omnidocs-close { padding: 0; font: inherit; background: none; border: 0; cursor: pointer; }
+.omnidocs-results { overflow-y: auto; padding: .4rem; overscroll-behavior: contain; }
+.omnidocs-hit {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    column-gap: .75rem;
+    padding: .55rem .7rem;
+    border-radius: .4rem;
+    color: inherit;
+    text-decoration: none;
+}
+.omnidocs-hit.is-active { background: var(--omnidocs-soft); outline: 1px solid var(--omnidocs-line); }
+.omnidocs-hit-kind { grid-row: span 3; align-self: start; min-width: 4.5rem; font-size: .8em; color: var(--omnidocs-muted); padding-top: .15rem; }
+.omnidocs-hit-title { font-weight: 600; overflow-wrap: anywhere; }
+.omnidocs-hit.is-symbol .omnidocs-hit-title { font-family: var(--omnidocs-mono); font-weight: 500; font-size: .95em; }
+.omnidocs-hit-page { font-size: .85em; color: var(--omnidocs-muted); }
+.omnidocs-hit-text { font-size: .9em; color: var(--omnidocs-muted); overflow-wrap: anywhere; }
+.omnidocs-hit mark, .omnidocs-results mark { color: inherit; background: color-mix(in srgb, var(--omnidocs-accent) 22%, transparent); border-radius: .15rem; }
+.omnidocs-empty { margin: 0; padding: 1rem; color: var(--omnidocs-muted); }
+.omnidocs-foot { display: flex; gap: 1rem; padding: .5rem 1rem; border-top: 1px solid var(--omnidocs-line); color: var(--omnidocs-muted); font-size: .85em; }
+.omnidocs-foot kbd + kbd { margin-left: .2rem; }
+html.omnidocs-searching { overflow: hidden; }
+
+/* ---- code, tabs, callouts, version badges ------------------------------------------- */
+
+.doc-code { position: relative; margin: 1rem 0; }
+.doc-code pre { margin: 0; padding: .9rem 1rem; overflow-x: auto; font-family: var(--omnidocs-mono); background: var(--omnidocs-soft); border: 1px solid var(--omnidocs-line); border-radius: .4rem; }
+.doc-code-caption { padding: .35rem 1rem; font-family: var(--omnidocs-mono); font-size: .85em; color: var(--omnidocs-muted); border: 1px solid var(--omnidocs-line); border-bottom: 0; border-radius: .4rem .4rem 0 0; }
+.doc-code-caption + pre { border-top-left-radius: 0; border-top-right-radius: 0; }
+.doc-code-copy { position: absolute; top: .4rem; right: .4rem; padding: .15rem .5rem; font: inherit; font-size: .8em; color: var(--omnidocs-muted); background: var(--omnidocs-bg); border: 1px solid var(--omnidocs-line); border-radius: .3rem; opacity: 0; cursor: pointer; transition: opacity .15s; }
+.doc-code:hover .doc-code-copy, .doc-code-copy:focus-visible, .doc-code-copy.is-done { opacity: 1; }
+@media (hover: none) { .doc-code-copy { opacity: 1; } }
+.doc-code-caption ~ .doc-code-copy { top: 2.2rem; }
+
+.doc-tabs { margin: 1rem 0; }
+.doc-tabs-list { display: flex; flex-wrap: wrap; gap: .25rem; }
+.doc-tabs-list [role="tab"] { padding: .3rem .8rem; font: inherit; font-size: .9em; color: var(--omnidocs-muted); background: none; border: 1px solid transparent; border-bottom: 0; border-radius: .4rem .4rem 0 0; cursor: pointer; }
+.doc-tabs-list [role="tab"][aria-selected="true"] { color: var(--omnidocs-fg); border-color: var(--omnidocs-line); background: var(--omnidocs-soft); }
+.doc-tabs:not(.is-ready) .doc-tabs-list { display: none; }
+.doc-tabs:not(.is-ready) .doc-tab::before { content: attr(data-tab); display: block; margin-top: .75rem; font-size: .85em; color: var(--omnidocs-muted); }
+.doc-tabs .doc-tab > .doc-code { margin-top: 0; }
+.doc-tabs.is-ready .doc-tab > .doc-code pre { border-top-left-radius: 0; }
+
+.doc-callout { margin: 1.25rem 0; padding: .75rem 1rem; border-left: 3px solid var(--omnidocs-accent); background: var(--omnidocs-soft); border-radius: 0 .4rem .4rem 0; }
+.doc-callout::before { content: attr(data-label); display: block; margin-bottom: .25rem; font-weight: 600; }
+.doc-callout > :last-child { margin-bottom: 0; }
+.doc-version { display: inline-block; margin-left: .35em; padding: 0 .4em; font-size: .62em; font-weight: 600; line-height: 1.5; vertical-align: .25em; color: var(--omnidocs-accent); border: 1px solid currentColor; border-radius: 1em; }

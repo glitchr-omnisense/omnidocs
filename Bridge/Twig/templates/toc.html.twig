@@ -1,0 +1,25 @@
+{#
+ # The table of contents of a manual read as one page (Omnidocs\OnePage::toc()):
+ # its second-level headings, each with its third-level ones. assets/omnidocs.js
+ # marks the one being read and keeps the address on it.
+ #
+ #   {% include '@Omnidocs/toc.html.twig' with {toc: one.toc(), label: 'On this page'} %}
+ #
+ # The folder is Twig's "Omnidocs" namespace: twig.paths in Symfony,
+ # $loader->addPath('vendor/omniscient/omnidocs/Bridge/Twig/templates', 'Omnidocs') elsewhere.
+ #}
+<nav class="omnidocs-toc" data-omnidocs-toc aria-label="{{ label|default('Contents') }}">
+    <ul>
+        {%- for entry in toc %}
+        <li><a href="#{{ entry.heading.id }}">{{ entry.heading.text }}</a>
+            {%- if entry.children is not empty %}
+            <ul>
+                {%- for heading in entry.children %}
+                <li><a href="#{{ heading.id }}">{{ heading.text }}</a></li>
+                {%- endfor %}
+            </ul>
+            {%- endif %}
+        </li>
+        {%- endfor %}
+    </ul>
+</nav>

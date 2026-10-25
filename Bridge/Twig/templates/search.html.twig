@@ -1,0 +1,17 @@
+{#
+ # The search's trigger: a button that opens assets/omnidocs.js' palette over
+ # the index the site wrote (Omnidocs\Search\SearchIndex), with its keys -
+ # ⌘ K on a Mac, Ctrl K elsewhere, and "/". The browser's ⌘ F stays its own.
+ #
+ #   {% include '@Omnidocs/search.html.twig' with {index: asset('search.json'), label: 'Search', kinds: {page: 'Page', heading: 'Section', symbol: 'API'}} %}
+ #}
+<button type="button" class="omnidocs-search{{ class is defined ? ' ' ~ class }}" data-omnidocs-search="{{ index }}"
+        data-text-placeholder="{{ placeholder|default(label|default('Search')) }}"
+        data-text-none="{{ none|default('Nothing found for “%q%”') }}"
+        data-text-hint="{{ hint|default('') }}"
+        data-text-close="{{ close|default('Close') }}"
+        data-text-kinds="{{ kinds|default({})|json_encode }}"
+        aria-keyshortcuts="Meta+K Control+K /">
+    <span class="omnidocs-search-label">{{ label|default('Search') }}</span>
+    <span class="omnidocs-search-keys"><kbd data-omnidocs-key="mod">Ctrl K</kbd> <kbd>/</kbd></span>
+</button>

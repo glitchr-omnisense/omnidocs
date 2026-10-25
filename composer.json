@@ -1,0 +1,48 @@
+{
+    "name": "omniscient/omnidocs",
+    "type": "library",
+    "description": "Omnidocs: one model of a manual, whatever wrote it - Markdown, Sphinx, Doxygen, JSDoc: its versions, its pages (title, contents, headings, the file to edit), its API entries and their anchors, read through one source contract; a search index a static page searches, and the HTML conventions of symfony.com/doc (callouts, versionadded, code with captions and tabs) every format renders to.",
+    "keywords": ["documentation", "manual", "markdown", "sphinx", "doxygen", "jsdoc", "api reference", "search index", "static site", "omnidocs"],
+    "homepage": "https://github.com/glitchr-studio/omnidocs",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marco Meyer",
+            "email": "marco.meyer@glitchr.io"
+        }
+    ],
+    "require": {
+        "php": ">=8.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^11.0"
+    },
+    "suggest": {
+        "omnidocs/markdown": "A folder of Markdown files, written as symfony.com/doc writes its pages (league/commonmark)",
+        "omnidocs/sphinx": "The output of Sphinx's JSON builder and its objects.inv",
+        "omnidocs/doxygen": "The XML output of Doxygen",
+        "omnidocs/jsdoc": "The JSON JSDoc explains (jsdoc -X): a JavaScript library's API"
+    },
+    "autoload": {
+        "psr-4": {
+            "Omnidocs\\": ""
+        },
+        "exclude-from-classmap": [
+            "/Tests/",
+            "/docker/"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Omnidocs\\Tests\\": "Tests/"
+        }
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-1.x": "1.x-dev"
+        }
+    },
+    "config": {
+        "sort-packages": true
+    }
+}

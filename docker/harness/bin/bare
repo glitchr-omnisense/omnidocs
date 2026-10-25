@@ -1,0 +1,55 @@
+#!/usr/bin/env php
+<?php
+
+/*
+ * omnidocs in plain PHP: Composer's autoloader and nothing else - no
+ * framework, no container, no template engine. Builds a manual from the
+ * "array" source by hand (the registry, a version, its linker), reads its
+ * pages in reading order, writes its search index, and prints as JSON what
+ * it read and what PHP loaded for it, past what the autoloader loads by
+ * itself (Tests/BareTest reads it).
+ *
+ *   php docker/harness/bin/bare [autoload.php]     (or OMNIDOCS_AUTOLOAD)
+ */
+
+$autoload = $argv[1] ?? (getenv('OMNIDOCS_AUTOLOAD') ?: dirname(__DIR__, 3).'/vendor/autoload.php');
+require $autoload;
+
+$declared = static fn (): array => array_merge(get_declared_classes(), get_declared_interfaces(), get_declared_traits());
+$before = $declared();
+
+use Omnidocs\Linking\RepositoryLinker;
+use Omnidocs\Model\Manual;
+use Omnidocs\Model\Symbol;
+use Omnidocs\Model\Version;
+use Omnidocs\Registry;
+use Omnidocs\Search\SearchIndex;
+use Omnidocs\Testing\ArraySourceFactory;
+
+$registry = new Registry([new ArraySourceFactory()], [
+    'manual' => ['factory' => 'array', 'options' => [
+        'pages' => [
+            '' => ['title' => 'Flow', 'html' => '<p>Scroll and navigation.</p><h2 id="use">Use</h2><p>Read <a href="page:install#npm">the install</a>.</p>'],
+            'install' => ['title' => 'Install', 'html' => '<h2 id="npm">npm</h2><p>npm install @glitchr/flowjs</p>', 'source' => 'docs/install.md'],
+            'api' => ['title' => 'API', 'html' => '<h3 id="stops-attach">attach</h3><p>The stops of a scroller.</p>'],
+        ],
+        'symbols' => [new Symbol('function', 'StickyStops.attach', 'api', 'stops-attach', 'The stops of a scroller.', 'attach(scroller, options)')],
+    ]],
+]);
+$manual = new Manual('flowjs', 'Flow', [new Version('1.x', $registry->get('manual'), '1.x', 'c417356')]);
+$version = $manual->version();
+$links = new RepositoryLinker(static fn (string $path, ?string $fragment): string => '/docs/'.$path.(null !== $fragment ? '#'.$fragment : ''), 'glitchr-studio/flowjs', 'c417356');
+$index = (new SearchIndex())->version($version, $links, extra: 'flowjs 1.x');
+$home = $version->page('', $links);
+
+$loaded = array_values(array_filter(array_diff($declared(), $before), static fn (string $class): bool => !(new ReflectionClass($class))->isInternal()));
+sort($loaded);
+
+echo json_encode([
+    'pages' => array_map(static fn ($node): string => $node->path, $version->pages()),
+    'next' => $version->next('')?->path,
+    'home' => $home?->html(),
+    'kinds' => array_map(static fn ($entry): string => $entry->kind, $index->entries()),
+    'index' => $index->toArray('en'),
+    'loaded' => $loaded,
+], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE), "\n";

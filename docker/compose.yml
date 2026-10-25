@@ -1,0 +1,57 @@
+# omniscient/omnidocs with its providers, and the tools whose real output they read:
+#
+#   docker compose run --rm omnidocs test        # every package's PHPUnit suite (the conformance suite on each
+#                                                #   provider's real fixture), BareTest included
+#   docker compose run --rm omnidocs bare        # plain PHP: a manual built by hand, its pages, its search index
+#   docker compose run --rm js                   # assets/omnidocs.js on node's test runner
+#   docker compose run --rm sphinx               # Requests' docs through Sphinx's JSON builder, into real/sphinx
+#   docker compose run --rm doxygen              # TinyXML-2 through Doxygen's XML output, into real/doxygen
+#   docker compose run --rm jsdoc                # flowjs' sources through jsdoc -X, into real/jsdoc.json
+#   docker compose run --rm omnidocs real        # each provider's suite on the whole of real/ (after the three above)
+#   docker compose down -v                       # the harness's volume gone
+#
+# Providers come from their checkouts beside this core (OMNIDOCS_PLUGINS, ../.. by default: the workspace
+# ~/Sites/omnidocs), from GitHub (branch 1.x) for those that are not there.
+name: omnidocs-harness
+
+services:
+  omnidocs:
+    build: .
+    image: omniscient/omnidocs-harness
+    volumes:
+      - ..:/omnidocs/core
+      - ${OMNIDOCS_PLUGINS:-../..}:/omnidocs/plugins:ro
+      - ./real:/omnidocs/real:ro
+      - harness:/harness
+
+  js:
+    image: node:22-alpine
+    working_dir: /omnidocs
+    command: ["node", "--test", "Tests/js/omnidocs.test.cjs"]
+    volumes:
+      - ..:/omnidocs:ro
+
+  # The tools, at pinned versions, on pinned real projects: what the providers' fixtures were cut from.
+  sphinx:
+    image: python:3.12-alpine
+    command: ["sh", "/tools/sphinx.sh"]
+    volumes:
+      - ./tools:/tools:ro
+      - ./real:/real
+
+  doxygen:
+    image: alpine:3.20
+    command: ["sh", "/tools/doxygen.sh"]
+    volumes:
+      - ./tools:/tools:ro
+      - ./real:/real
+
+  jsdoc:
+    image: node:22-alpine
+    command: ["sh", "/tools/jsdoc.sh"]
+    volumes:
+      - ./tools:/tools:ro
+      - ./real:/real
+
+volumes:
+  harness:

@@ -245,12 +245,33 @@
             if (i !== -1 && i !== state.active) move(list, input, i - state.active);
         });
         list.addEventListener('click', function (event) {
-            if (event.target.closest && event.target.closest('.omnidocs-hit')) close(true);
+            var hit = event.target.closest && event.target.closest('.omnidocs-hit');
+            if (!hit) return;
+            close(true);
+            // A hit on the page being read: its anchor, at once - not a navigation to the same page (a
+            // router that loads pages in place, or an address that differs by a slash, would lose it).
+            if (samePage(hit)) {
+                event.preventDefault();
+                event.stopPropagation();
+                go(hit.hash);
+            }
         });
         palette.addEventListener('click', function (event) {
             if (event.target.closest && event.target.closest('[data-omnidocs-close]')) close();
         });
         palette._id = id;
+    }
+
+    function samePage(link) {
+        var strip = function (path) { return path.replace(/\/(index\.html)?$/, ''); };
+        return link.origin === root.location.origin && strip(link.pathname) === strip(root.location.pathname) && link.hash.length > 1;
+    }
+
+    function go(hash) {
+        var target = document.getElementById(decodeURIComponent(hash.slice(1)));
+        try { history.pushState(history.state, '', root.location.pathname + root.location.search + hash); } catch (e) { root.location.hash = hash; }
+        if (target) target.scrollIntoView();
+        if (target && target.focus) { target.setAttribute('tabindex', '-1'); target.focus({ preventScroll: true }); }
     }
 
     function trigger() {
@@ -474,7 +495,7 @@
 
     function setup() {
         document.documentElement.classList.add('omnidocs-ready');
-        var mac = /Mac|iPhone|iPad|iPod/.test((root.navigator && (root.navigator.userAgentData && root.navigator.userAgentData.platform || root.navigator.platform)) || '');
+        var mac = /mac|iphone|ipad|ipod/i.test((root.navigator && (root.navigator.userAgentData && root.navigator.userAgentData.platform || root.navigator.platform)) || '');
         document.documentElement.classList.toggle('omnidocs-mac', mac);
         Array.prototype.forEach.call(document.querySelectorAll('[data-omnidocs-key="mod"]'), function (key) {
             key.textContent = mac ? '⌘ K' : 'Ctrl K';

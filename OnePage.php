@@ -156,7 +156,8 @@ final class OnePage
             if ([] === $paths || (1 === \count($paths) && 0 === strcasecmp($node->title, (string) ($this->version->node($paths[0])?->title ?? '')))) {
                 continue;
             }
-            $groups[] = ['id' => Headings::id('group-'.Path::slug('' !== $node->path ? $node->path : $node->title), $taken), 'title' => $node->title, 'paths' => $paths];
+            // Its anchor from its title ("group-navigation"), whatever its path ("group/navigation", "guides").
+            $groups[] = ['id' => Headings::id('group-'.Path::slug($node->title), $taken), 'title' => $node->title, 'paths' => $paths];
         }
 
         return $this->groupList = $groups;

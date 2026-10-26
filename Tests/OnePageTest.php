@@ -85,7 +85,7 @@ final class OnePageTest extends TestCase
             {
                 return [
                     Node::section('core', 'Core', [new Node('flow', 'Flow')]),
-                    Node::section('navigation', 'Navigation', [new Node('transparent', 'Transparent'), new Node('flowframe', 'FlowFrame')]),
+                    Node::section('group/navigation', 'Navigation', [new Node('transparent', 'Transparent'), new Node('flowframe', 'FlowFrame')]),
                     Node::section('group/cookie', 'Cookie', [new Node('cookie', 'Cookie')]),
                 ];
             }

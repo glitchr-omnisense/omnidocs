@@ -31,6 +31,11 @@ use Omnidocs\Support\Path;
  *   $one = new OnePage($manual->version(), $links, '/docs/flowjs/1.x');
  *   $one->parts();     // the home, then each page: title, anchor, HTML, the file to edit
  *   $one->toc();       // the headings down to the third level, nested: the sidebar
+ *
+ * With $groups, the manual's top-level sections (a folder, a toctree caption, a group of API entries)
+ * group its parts: the table of contents lists each section with its pages under it, and the page
+ * puts the section's title before its first part (div.doc-group, its own anchor). A section of a
+ * single page that bears its name is that page alone, not a group of one.
  */
 final class OnePage
 {
@@ -42,12 +47,17 @@ final class OnePage
     /** @var array<string, string>|null page path => its anchor */
     private ?array $anchors = null;
 
+    /** @var list<array{id: string, title: string, paths: list<string>}>|null */
+    private ?array $groupList = null;
+
     public function __construct(
         public readonly Version $version,
         private readonly LinkerInterface $links,
         /** The page's own address: what search records and redirections lead to. */
         public readonly string $url,
         private readonly int $tocLevel = 3,
+        /** The top-level sections group the parts: in the table of contents, and a title before each group. */
+        private readonly bool $groups = false,
     ) {
     }
 
@@ -101,15 +111,67 @@ final class OnePage
             }
         };
         $parts = [];
+        $opened = [];
         foreach ($this->version->pages() as $node) {
             $page = $this->version->source->page($node->path, $inner);
             if (null === $page) {
                 continue;
             }
-            $parts[] = $this->part($node, $page);
+            $part = $this->part($node, $page);
+            $group = $this->groupOf($node->path);
+            if (null !== $group && !isset($opened[$group['id']])) {
+                // The group's title, before its first part.
+                $opened[$group['id']] = true;
+                $title = '<div class="doc-group" id="'.htmlspecialchars($group['id'], \ENT_QUOTES).'"><p class="doc-group-title">'.htmlspecialchars($group['title'], \ENT_QUOTES).'</p></div>';
+                $part = new OnePart($part->path, $part->title, $part->anchor, $title."\n".$part->html, $part->headings, $part->source, $part->text, $part->page);
+            }
+            $parts[] = $part;
         }
 
         return $this->parts = $parts;
+    }
+
+    /**
+     * The groups of the parts (with $groups): each top-level section, its anchor, its title, its pages'
+     * paths - but a section of one page that bears its name.
+     *
+     * @return list<array{id: string, title: string, paths: list<string>}>
+     */
+    public function groups(): array
+    {
+        if (!$this->groups) {
+            return [];
+        }
+        if (null !== $this->groupList) {
+            return $this->groupList;
+        }
+        $taken = array_flip(array_values($this->anchors()));
+        $groups = [];
+        foreach ($this->version->tree() as $node) {
+            if (!$node->isSection()) {
+                continue;
+            }
+            $paths = array_map(static fn (Node $page): string => $page->path, Node::flatten($node->children));
+            // A section of a single page named as the page is that page alone, not a group of one.
+            if ([] === $paths || (1 === \count($paths) && 0 === strcasecmp($node->title, (string) ($this->version->node($paths[0])?->title ?? '')))) {
+                continue;
+            }
+            $groups[] = ['id' => Headings::id('group-'.Path::slug('' !== $node->path ? $node->path : $node->title), $taken), 'title' => $node->title, 'paths' => $paths];
+        }
+
+        return $this->groupList = $groups;
+    }
+
+    /** @return array{id: string, title: string, paths: list<string>}|null the group a page is in */
+    private function groupOf(string $path): ?array
+    {
+        foreach ($this->groups() as $group) {
+            if (\in_array($path, $group['paths'], true)) {
+                return $group;
+            }
+        }
+
+        return null;
     }
 
     /** The parts' HTML, one after the other. */
@@ -136,6 +198,9 @@ final class OnePage
      */
     public function toc(): array
     {
+        if ([] !== $this->groups()) {
+            return $this->groupedToc();
+        }
         $toc = [];
         foreach ($this->headings() as $heading) {
             if (2 === $heading->level) {
@@ -143,6 +208,38 @@ final class OnePage
             } elseif ($heading->level <= $this->tocLevel && [] !== $toc && $heading->level > 2) {
                 $toc[\count($toc) - 1]['children'][] = $heading;
             }
+        }
+
+        return $toc;
+    }
+
+    /**
+     * The table of contents by group: each group with its parts under it; a part outside every group
+     * at the top, with its own sections.
+     *
+     * @return list<array{heading: Heading, children: list<Heading>, group?: bool}>
+     */
+    private function groupedToc(): array
+    {
+        $toc = [];
+        $groupAt = [];
+        foreach ($this->parts() as $part) {
+            $group = $this->groupOf($part->path);
+            if (null === $group) {
+                foreach ($part->headings as $heading) {
+                    if (2 === $heading->level) {
+                        $toc[] = ['heading' => $heading, 'children' => []];
+                    } elseif ($heading->level > 2 && $heading->level <= $this->tocLevel && [] !== $toc && !($toc[\count($toc) - 1]['group'] ?? false)) {
+                        $toc[\count($toc) - 1]['children'][] = $heading;
+                    }
+                }
+                continue;
+            }
+            if (!isset($groupAt[$group['id']])) {
+                $groupAt[$group['id']] = \count($toc);
+                $toc[] = ['heading' => new Heading(2, $group['id'], $group['title']), 'children' => [], 'group' => true];
+            }
+            $toc[$groupAt[$group['id']]]['children'][] = new Heading(3, $part->anchor, $part->title);
         }
 
         return $toc;

@@ -69,6 +69,41 @@
 /* A section's own entries show while it is read (and all of them without a script). */
 .omnidocs-toc ul ul { display: none; }
 .omnidocs-toc li.is-open > ul, html:not(.omnidocs-ready) .omnidocs-toc ul ul { display: block; }
+
+/* An entry with entries under it: its dot and name a disclosure button, the section reached by the arrow
+   beside it. The script opens the one being read and keeps what the reader opened or closed. */
+.omnidocs-toc .omnidocs-toc-entry.has-children > ul { display: block; }
+.omnidocs-toc .omnidocs-toc-entry.has-children > ul[hidden] { display: none; }
+.omnidocs-toc-head { display: flex; align-items: center; gap: .1rem; }
+.omnidocs-toc-disclose {
+    flex: 1; min-width: 0;
+    display: flex; align-items: center; gap: .5rem;
+    padding: .28rem .6rem;
+    font: inherit; font-weight: 600; line-height: 1.35; text-align: left;
+    color: var(--omnidocs-fg); background: none;
+    border: 0; border-left: 2px solid transparent; border-radius: 0;
+    cursor: pointer; overflow-wrap: anywhere;
+}
+.omnidocs-toc-dot { flex: none; width: .6rem; height: .6rem; border: 2px solid currentColor; border-radius: 50%; transition: background-color .15s, transform .15s; }
+.omnidocs-toc-disclose[aria-expanded="true"] .omnidocs-toc-dot { background: currentColor; }
+.omnidocs-toc-disclose:hover .omnidocs-toc-dot { transform: scale(1.15); }
+.omnidocs-toc .omnidocs-toc-go {
+    flex: none; display: inline-grid; place-items: center;
+    width: 1.7rem; height: 1.7rem; padding: 0;
+    color: var(--omnidocs-muted); border-left: 0; border-radius: .35rem;
+}
+.omnidocs-toc .omnidocs-toc-go:hover { color: var(--omnidocs-fg); background: var(--omnidocs-soft); }
+.omnidocs-toc-go svg { width: .8rem; height: .8rem; }
+.omnidocs-toc .omnidocs-toc-go.is-current { background: none; }
+.omnidocs-toc-head:has(.is-current) .omnidocs-toc-disclose,
+.omnidocs-toc-entry.is-reading > .omnidocs-toc-head .omnidocs-toc-disclose { color: var(--omnidocs-accent); }
+.omnidocs-toc-head:has(.is-current) .omnidocs-toc-disclose { border-left-color: var(--omnidocs-accent); background: var(--omnidocs-soft); }
+.omnidocs-toc-children.is-opening { animation: omnidocs-toc-open .18s ease-out; }
+@keyframes omnidocs-toc-open { from { opacity: 0; transform: translateY(-.3rem); } }
+@media (prefers-reduced-motion: reduce) {
+    .omnidocs-toc-children.is-opening { animation: none; }
+    .omnidocs-toc-dot { transition: none; }
+}
 .omnidocs-toc a.is-current {
     color: var(--omnidocs-accent);
     border-left-color: var(--omnidocs-accent);

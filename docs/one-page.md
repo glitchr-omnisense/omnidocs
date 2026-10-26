@@ -31,6 +31,27 @@ own scroll when it is taller than the screen; under 64rem it is a drawer opened 
 `aria-current="location"`), opens its section, keeps it in sight in the sidebar, and keeps the address
 on it with `history.replaceState` - the back button is not filled with sections.
 
+An entry with entries under it is a **disclosure**: its dot and its name form a button
+(`[data-omnidocs-toc-disclose]`, `aria-expanded`, `aria-controls` naming its list), and the section
+itself is reached by the small arrow beside it (`a.omnidocs-toc-go`, named "Go to …" - the template's
+`go` variable gives the words). By default only the entry being read is open, and the one open follows
+the reading; an entry the reader opened or closed by hand stays so until they change it. Enter and
+Space toggle it (it is a button), ArrowRight opens it, ArrowLeft closes it; it opens with a short
+animation, none under `prefers-reduced-motion`; the phone's drawer is the same list. Without the
+script every entry stays open.
+
+```twig
+{% include '@Omnidocs/toc.html.twig' with {toc: one.toc(), label: 'On this page', go: 'Aller à'} %}
+```
+
+**Groups.** `new OnePage($version, $links, $url, groups: true)` takes the manual's top-level sections
+(a folder of Markdown files, a toctree caption, a group of API entries) as groups of its parts: the
+table of contents lists each group with its pages under it (`'group' => true` on the entry), and the
+page puts the group's title before its first part (`<div class="doc-group" id="group-navigation"><p
+class="doc-group-title">Navigation</p></div>`). A section of a single page that bears its name is that
+page alone. `groups()` lists them: `[['id' => 'group-navigation', 'title' => 'Navigation', 'paths' =>
+['transparent', 'flowframe']], ...]`.
+
 A site gives its look through custom properties: `--omnidocs-bg`, `--omnidocs-fg`, `--omnidocs-muted`,
 `--omnidocs-line`, `--omnidocs-soft`, `--omnidocs-accent`, `--omnidocs-top`, `--omnidocs-drawer-top`,
 `--omnidocs-sidebar`, `--omnidocs-mono` (the defaults have no specificity: any rule of the site wins).

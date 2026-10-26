@@ -1,25 +1,41 @@
 {#
  # The table of contents of a manual read as one page (Omnidocs\OnePage::toc()):
- # its second-level headings, each with its third-level ones. assets/omnidocs.js
- # marks the one being read and keeps the address on it.
+ # its second-level headings, each with its third-level ones - or, for a
+ # manual whose sections group its pages (OnePage's $groups), each group with
+ # its pages. assets/omnidocs.js marks the one being read and keeps the
+ # address on it.
  #
- #   {% include '@Omnidocs/toc.html.twig' with {toc: one.toc(), label: 'On this page'} %}
+ # An entry with entries under it is a disclosure: its dot and its name are a
+ # button (aria-expanded, aria-controls) that opens and closes them; the
+ # section itself is reached by the small arrow beside it (a link, named
+ # "go"). Without the script every entry stays open. omnidocs.js keeps open
+ # the entry being read, and what the reader opened or closed by hand until
+ # they change it.
+ #
+ #   {% include '@Omnidocs/toc.html.twig' with {toc: one.toc(), label: 'On this page', go: 'Go to'} %}
  #
  # The folder is Twig's "Omnidocs" namespace: twig.paths in Symfony,
  # $loader->addPath('vendor/omnisense/omnidocs/Bridge/Twig/templates', 'Omnidocs') elsewhere.
  #}
+{%- set _go = go|default('Go to') -%}
 <nav class="omnidocs-toc" data-omnidocs-toc aria-label="{{ label|default('Contents') }}">
     <ul>
         {%- for entry in toc %}
-        <li><a href="#{{ entry.heading.id }}">{{ entry.heading.text }}</a>
-            {%- if entry.children is not empty %}
-            <ul>
+        {%- if entry.children is not empty %}
+        <li class="omnidocs-toc-entry has-children{% if entry.group is defined and entry.group %} is-group{% endif %}" data-omnidocs-toc-entry>
+            <div class="omnidocs-toc-head">
+                <button type="button" class="omnidocs-toc-disclose" data-omnidocs-toc-disclose aria-expanded="true" aria-controls="omnidocs-toc-{{ entry.heading.id }}"><span class="omnidocs-toc-dot" aria-hidden="true"></span><span class="omnidocs-toc-name">{{ entry.heading.text }}</span></button>
+                <a class="omnidocs-toc-go" href="#{{ entry.heading.id }}" aria-label="{{ _go }} {{ entry.heading.text }}" title="{{ _go }} {{ entry.heading.text }}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M6 3l5 5-5 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+            </div>
+            <ul id="omnidocs-toc-{{ entry.heading.id }}" class="omnidocs-toc-children">
                 {%- for heading in entry.children %}
                 <li><a href="#{{ heading.id }}">{{ heading.text }}</a></li>
                 {%- endfor %}
             </ul>
-            {%- endif %}
         </li>
+        {%- else %}
+        <li class="omnidocs-toc-entry"><a href="#{{ entry.heading.id }}">{{ entry.heading.text }}</a></li>
+        {%- endif %}
         {%- endfor %}
     </ul>
 </nav>

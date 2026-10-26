@@ -17,7 +17,8 @@ What the core adds over the sources:
 
 - `OnePage`: a version read as **one page** - the home, then every page as a part, its headings one
   level down and its ids prefixed so that none meet, links between pages turned into anchors of the
-  page, the table of contents (h2/h3) for a sidebar, and the former address of each page with the
+  page, the table of contents (h2/h3, or the top-level sections as groups with `groups: true`) for a
+  sidebar, its entries disclosures (the one read open, the reader's choices kept), and the former address of each page with the
   part it became, for a static redirection that carries the visitor's `#fragment` over
   ([omnibridge/static](https://github.com/glitchr-omnisense/omnibridge-static));
 - `Search\SearchIndex`: the JSON a static page searches - a record per page (or part), per heading,

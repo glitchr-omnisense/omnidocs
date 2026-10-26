@@ -17,7 +17,12 @@
  *    ([data-omnidocs-toc-scroll]), the address following it (#anchor, by
  *    history.replaceState: nothing added to the history); on a phone a
  *    button [data-omnidocs-toc-toggle] (aria-controls: the sidebar) opens
- *    and closes it.
+ *    and closes it. An entry with entries under it is a disclosure
+ *    ([data-omnidocs-toc-disclose]: its dot and its name, aria-expanded;
+ *    its section reached by the arrow beside it): only the one being read is
+ *    open, following the reading, but what the reader opens or closes stays
+ *    so until they change it; Enter and Space toggle it, ArrowRight opens and
+ *    ArrowLeft closes; a short animation, none under reduced motion.
  *
  * The page says where its index is and what to call things:
  *
@@ -442,8 +447,9 @@
                 item.link.classList.add('is-current');
                 item.link.setAttribute('aria-current', 'location');
                 for (var li = item.link.closest('li'); li && nav.contains(li); li = li.parentNode.closest('li')) li.classList.add('is-open');
-                keepInView(item.link);
             }
+            follow(nav, item ? item.link : null);
+            if (item) keepInView(item.link);
             // The address follows the reading, adding nothing to the history.
             if (moved) {
                 try {
@@ -482,6 +488,46 @@
             root.removeEventListener('resize', onScroll);
         };
         measure();
+        // Nothing read yet (the page's top): every disclosure closed, but those opened by hand.
+        if (!current) follow(nav, null);
+    }
+
+    // ---- the table of contents' disclosures: the entry read open, the reader's choices kept ----
+
+    function reducedMotion() {
+        return !!(root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
+
+    function disclose(button, open, animate) {
+        var list = document.getElementById(button.getAttribute('aria-controls'));
+        if (!list) return;
+        var was = button.getAttribute('aria-expanded') === 'true' && !list.hidden;
+        button.setAttribute('aria-expanded', open ? 'true' : 'false');
+        list.hidden = !open;
+        if (open && !was && animate && !reducedMotion()) {
+            list.classList.remove('is-opening');
+            void list.offsetWidth;
+            list.classList.add('is-opening');
+        }
+    }
+
+    /** The entry being read open, the others closed - but for those the reader opened or closed by hand. */
+    function follow(nav, link) {
+        var reading = link ? link.closest('[data-omnidocs-toc-entry].has-children') : null;
+        Array.prototype.forEach.call(nav.querySelectorAll('[data-omnidocs-toc-entry].has-children'), function (entry) {
+            var button = entry.querySelector('[data-omnidocs-toc-disclose]');
+            if (!button) return;
+            entry.classList.toggle('is-reading', entry === reading);
+            var manual = entry.getAttribute('data-omnidocs-toc-manual');
+            disclose(button, manual ? manual === 'open' : entry === reading, true);
+        });
+    }
+
+    function byHand(button, open) {
+        var entry = button.closest('[data-omnidocs-toc-entry]');
+        if (open === undefined) open = button.getAttribute('aria-expanded') !== 'true';
+        if (entry) entry.setAttribute('data-omnidocs-toc-manual', open ? 'open' : 'closed');
+        disclose(button, open, true);
     }
 
     function toggleToc(button, open) {
@@ -536,6 +582,8 @@
         if (tab) { select(tab.closest('[data-doc-tabs]'), tab, true); return; }
         var toggle = event.target.closest && event.target.closest('[data-omnidocs-toc-toggle]');
         if (toggle) { event.preventDefault(); toggleToc(toggle); return; }
+        var disclosure = event.target.closest && event.target.closest('[data-omnidocs-toc-disclose]');
+        if (disclosure) { event.preventDefault(); byHand(disclosure); return; }
         // A link of the open contents (a phone's drawer) closes it on its way.
         var opened = document.querySelector('[data-omnidocs-toc-toggle][aria-expanded="true"]');
         if (opened && event.target.closest && event.target.closest('[data-omnidocs-toc] a')) toggleToc(opened, false);
@@ -553,6 +601,13 @@
     });
 
     document.addEventListener('keydown', function (event) {
+        // A disclosure of the contents: ArrowRight opens it, ArrowLeft closes it (Enter and Space are the button's).
+        var disclosure = event.target.closest && event.target.closest('[data-omnidocs-toc-disclose]');
+        if (disclosure && (event.key === 'ArrowRight' || event.key === 'ArrowLeft') && !event.altKey && !event.metaKey && !event.ctrlKey) {
+            event.preventDefault();
+            byHand(disclosure, event.key === 'ArrowRight');
+            return;
+        }
         var tab = event.target.closest && event.target.closest('[data-doc-tabs] [role="tab"]');
         if (!tab || (event.key !== 'ArrowRight' && event.key !== 'ArrowLeft')) return;
         var all = Array.prototype.slice.call(tab.parentNode.querySelectorAll('[role="tab"]'));

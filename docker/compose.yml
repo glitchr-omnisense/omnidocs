@@ -1,4 +1,4 @@
-# omniscient/omnidocs with its providers, and the tools whose real output they read:
+# omnisense/omnidocs with its providers, and the tools whose real output they read:
 #
 #   docker compose run --rm omnidocs test        # every package's PHPUnit suite (the conformance suite on each
 #                                                #   provider's real fixture), BareTest included
@@ -17,7 +17,7 @@ name: omnidocs-harness
 services:
   omnidocs:
     build: .
-    image: omniscient/omnidocs-harness
+    image: omnisense/omnidocs-harness
     volumes:
       - ..:/omnidocs/core
       - ${OMNIDOCS_PLUGINS:-../..}:/omnidocs/plugins:ro

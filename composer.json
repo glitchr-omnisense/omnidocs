@@ -1,9 +1,9 @@
 {
-    "name": "omniscient/omnidocs",
+    "name": "omnisense/omnidocs",
     "type": "library",
     "description": "Omnidocs: one model of a manual, whatever wrote it - Markdown, Sphinx, Doxygen, JSDoc: its versions, its pages (title, contents, headings, the file to edit), its API entries and their anchors, read through one source contract; a search index a static page searches, and the HTML conventions of symfony.com/doc (callouts, versionadded, code with captions and tabs) every format renders to.",
     "keywords": ["documentation", "manual", "markdown", "sphinx", "doxygen", "jsdoc", "api reference", "search index", "static site", "omnidocs"],
-    "homepage": "https://github.com/glitchr-studio/omnidocs",
+    "homepage": "https://github.com/glitchr-omnisense/omnidocs",
     "license": "MIT",
     "authors": [
         {
@@ -22,6 +22,9 @@
         "omnidocs/sphinx": "The output of Sphinx's JSON builder and its objects.inv",
         "omnidocs/doxygen": "The XML output of Doxygen",
         "omnidocs/jsdoc": "The JSON JSDoc explains (jsdoc -X): a JavaScript library's API"
+    },
+    "replace": {
+        "omniscient/omnidocs": "self.version"
     },
     "autoload": {
         "psr-4": {

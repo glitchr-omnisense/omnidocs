@@ -1,4 +1,4 @@
-# omniscient/omnidocs
+# omnisense/omnidocs
 
 One model of a manual, whatever wrote it. A manual has versions; a version has a home, its contents
 (pages, and sections holding pages), its pages - a title, an HTML body, the headings with their
@@ -7,11 +7,11 @@ at an anchor). Each format is a provider that implements one `SourceInterface`:
 
 | Package | Reads | Verified on |
 |---|---|---|
-| [omnidocs/markdown](https://github.com/glitchr-studio/omnidocs-markdown) | a folder of Markdown files, written as symfony.com/doc writes its pages | flowjs' docs/, README, CHANGELOG; the Omniscient site's guides, news and 153 manuals |
-| [omnidocs/php](https://github.com/glitchr-studio/omnidocs-php) | a PHP package's sources: its API reference | this package; the 150 PHP packages of the Omniscient catalogue |
-| [omnidocs/jsdoc](https://github.com/glitchr-studio/omnidocs-jsdoc) | the JSON `jsdoc -X` writes | flowjs (seven UMD modules) |
-| [omnidocs/sphinx](https://github.com/glitchr-studio/omnidocs-sphinx) | Sphinx's JSON builder output and objects.inv | Requests v2.32.3 |
-| [omnidocs/doxygen](https://github.com/glitchr-studio/omnidocs-doxygen) | Doxygen's XML output | TinyXML-2 10.0.0 |
+| [omnidocs/markdown](https://github.com/glitchr-omnisense/omnidocs-markdown) | a folder of Markdown files, written as symfony.com/doc writes its pages | flowjs' docs/, README, CHANGELOG; the Omnisense site's guides, news and 153 manuals |
+| [omnidocs/php](https://github.com/glitchr-omnisense/omnidocs-php) | a PHP package's sources: its API reference | this package; the 150 PHP packages of the Omnisense catalogue |
+| [omnidocs/jsdoc](https://github.com/glitchr-omnisense/omnidocs-jsdoc) | the JSON `jsdoc -X` writes | flowjs (seven UMD modules) |
+| [omnidocs/sphinx](https://github.com/glitchr-omnisense/omnidocs-sphinx) | Sphinx's JSON builder output and objects.inv | Requests v2.32.3 |
+| [omnidocs/doxygen](https://github.com/glitchr-omnisense/omnidocs-doxygen) | Doxygen's XML output | TinyXML-2 10.0.0 |
 
 What the core adds over the sources:
 
@@ -19,7 +19,7 @@ What the core adds over the sources:
   level down and its ids prefixed so that none meet, links between pages turned into anchors of the
   page, the table of contents (h2/h3) for a sidebar, and the former address of each page with the
   part it became, for a static redirection that carries the visitor's `#fragment` over
-  ([omnibridge/static](https://github.com/glitchr-studio/omnibridge-static));
+  ([omnibridge/static](https://github.com/glitchr-omnisense/omnibridge-static));
 - `Search\SearchIndex`: the JSON a static page searches - a record per page (or part), per heading,
   per API entry, plus the site's own;
 - `Html\Conventions`: the HTML every source writes - callouts (note, tip, warning, seealso,
@@ -74,7 +74,7 @@ file_put_contents('search.json', (new SearchIndex())->onePage($one, 'Flow')->toJ
   `omnidocs real`): Requests' 15 documents and the 167 API entries of its 223-line inventory (its
   std: labels left out), TinyXML-2's main page and 24 compounds with 407 entries, flowjs' 3 988
   doclets read as 7 globals and 299 public entries.
-- Verified in use: the Omniscient site (153 manuals, one page each, 150 PHP API references) and the
+- Verified in use: the Omnisense site (153 manuals, one page each, 150 PHP API references) and the
   flowjs site, built statically and read in headless Chrome.
 - Not verified: Sphinx themes' own JSON additions beyond the standard builder; Sphinx projects
   written with MyST (Markdown) - the JSON builder writes the same HTML, not tried; Doxygen's C#,

@@ -6,7 +6,7 @@ use Omnidocs\Registry;
 use PHPUnit\Framework\TestCase;
 
 /**
- * omniscient/omnidocs with no framework: every class of the package loaded
+ * omnisense/omnidocs with no framework: every class of the package loaded
  * in a PHP process of its own, and no class of a framework, an HTTP client
  * or an application among what that loaded; then the harness's bare script
  * (docker/harness/bin/bare) builds a manual, reads its pages in order and

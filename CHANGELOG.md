@@ -1,9 +1,12 @@
 # Changelog
 
-Every version of omniscient/omnidocs, newest first ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+Every version of omnisense/omnidocs, newest first ([Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 [Semantic Versioning](https://semver.org/)).
 
 ## Unreleased
+
+### Changed
+- The package is `omnisense/omnidocs` (Omniscient is now Omnisense), its repository `glitchr-omnisense/omnidocs`; `replace` keeps `omniscient/omnidocs` resolving.
 
 ### Added
 - The model (Manual, Version, Node, Page, Rendered, Heading, Symbol), `SourceInterface`, the factories'

@@ -1,7 +1,7 @@
 # Installation and a manual in plain PHP
 
 ```sh
-composer require omniscient/omnidocs:1.x-dev omnidocs/markdown:1.x-dev
+composer require omnisense/omnidocs:1.x-dev omnidocs/markdown:1.x-dev
 ```
 
 The core needs PHP 8.2 and nothing else; each provider requires what its format needs
@@ -36,4 +36,4 @@ the repository (`RepositoryLinker`: github.com at the commit read, never a movin
 for a picture. A site gives its own addresses there.
 
 In Symfony, register the factories and the registry as services (autowiring takes them as they are)
-and Twig's namespace `Omnidocs` for `vendor/omniscient/omnidocs/Bridge/Twig/templates`.
+and Twig's namespace `Omnidocs` for `vendor/omnisense/omnidocs/Bridge/Twig/templates`.

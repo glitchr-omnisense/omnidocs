@@ -8,19 +8,27 @@
 #   docker compose run --rm doxygen              # TinyXML-2 through Doxygen's XML output, into real/doxygen
 #   docker compose run --rm jsdoc                # flowjs' sources through jsdoc -X, into real/jsdoc.json
 #   docker compose run --rm omnidocs real        # each provider's suite on the whole of real/ (after the three above)
+#   docker compose run --rm omnidocs phpstan     # PHPStan at level max on each package, its baseline included
 #   docker compose down -v                       # the harness's volume gone
 #
 # Providers come from their checkouts beside this core (OMNIDOCS_PLUGINS, ../.. by default: the workspace
-# ~/Sites/omnidocs), from GitHub (branch 1.x) for those that are not there.
+# ~/Sites/omnidocs), from GitHub (branch 1.x) for those that are not there. omnisense/contracts (the
+# providers' tests read their policy.json through it) from its checkout under OMNISENSE_CONTRACTS
+# (../../../omnisense-contracts by default), GitHub otherwise.
 name: omnidocs-harness
 
 services:
   omnidocs:
     build: .
     image: omnisense/omnidocs-harness
+    # The image may be another family's harness tagged (PHP 8.4 with Composer): the entrypoint is
+    # named here, not taken from the image. One service, no server beside it: Docker's default bridge.
+    entrypoint: ["/omnidocs/core/docker/entrypoint.sh"]
+    network_mode: bridge
     volumes:
       - ..:/omnidocs/core
       - ${OMNIDOCS_PLUGINS:-../..}:/omnidocs/plugins:ro
+      - ${OMNISENSE_CONTRACTS:-../../../omnisense-contracts}:/omnisense/contracts:ro
       - ./real:/omnidocs/real:ro
       - harness:/harness
 

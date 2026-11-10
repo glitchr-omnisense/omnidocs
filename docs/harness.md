@@ -9,9 +9,12 @@ docker compose run --rm sphinx            # Requests' docs through Sphinx 8.1.3'
 docker compose run --rm doxygen           # TinyXML-2 through Doxygen -> real/doxygen
 docker compose run --rm jsdoc             # flowjs through JSDoc 4.0.5 -> real/jsdoc.json
 docker compose run --rm omnidocs real     # each provider's conformance suite on the whole of real/
+docker compose run --rm omnidocs phpstan  # PHPStan at level max on each package, its baseline included
 docker compose down -v
 ```
 
 The providers come from their checkouts beside the core (`OMNIDOCS_PLUGINS`, `../..` by default: the
-workspace), from GitHub for those that are not there. The fixtures the providers' own suites read were
+workspace), from GitHub for those that are not there; omnisense/contracts, a development dependency for
+the providers' usage policies (each `policy.json` read by its `Tests/PolicyTest.php`), from its checkout
+(`OMNISENSE_CONTRACTS`, `../../../omnisense-contracts` by default) or GitHub. The fixtures the providers' own suites read were
 cut from the same tools' output: Fixtures/*/COMMIT names the project's commit.

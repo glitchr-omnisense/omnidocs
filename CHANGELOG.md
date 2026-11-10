@@ -6,6 +6,16 @@ Every version of omnisense/omnidocs, newest first ([Keep a Changelog](https://ke
 ## Unreleased
 
 ### Changed
+
+- The harness installs omnisense/contracts (its checkout under `OMNISENSE_CONTRACTS`, GitHub
+  otherwise) as a development dependency, for the providers' usage policies, runs PHPStan
+  (`phpstan`) on each package, names its entrypoint and runs on Docker's default bridge.
+  omnisense/omnidocs itself does not require omnisense/contracts: nothing of its kernel fits a
+  local model of a manual (its `Config` validates per source, its `Registry` holds sources, not
+  providers; no source reaches a network), so the core stays as it is and each provider declares
+  "no third party" as data.
+
+### Changed
 - The package is `omnisense/omnidocs` (Omniscient is now Omnisense), its repository `glitchr-omnisense/omnidocs`; `replace` keeps `omniscient/omnidocs` resolving.
 
 ### Added

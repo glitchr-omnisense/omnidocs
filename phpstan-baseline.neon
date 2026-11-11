@@ -25,18 +25,6 @@ parameters:
 			path: Html/Prose.php
 
 		-
-			message: '#^Cannot access an offset on list\<Omnidocs\\Model\\Heading\>\|Omnidocs\\Model\\Heading\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: OnePage.php
-
-		-
-			message: '#^Method Omnidocs\\OnePage\:\:toc\(\) should return list\<array\{heading\: Omnidocs\\Model\\Heading, children\: list\<Omnidocs\\Model\\Heading\>\}\> but returns list\<array\<''children''\|''heading'', list\<Omnidocs\\Model\\Heading\>\|Omnidocs\\Model\\Heading\>\>\.$#'
-			identifier: return.type
-			count: 1
-			path: OnePage.php
-
-		-
 			message: '#^Method Omnidocs\\Support\\Path\:\:order\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -71,15 +59,3 @@ parameters:
 			identifier: staticMethod.alreadyNarrowedType
 			count: 1
 			path: Testing/SourceContractTests.php
-
-		-
-			message: '#^Method Omnidocs\\SourceInterface@anonymous/Tests/ModelTest\.php\:17\:\:home\(\) never returns null so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: Tests/ModelTest.php
-
-		-
-			message: '#^Method Omnidocs\\SourceInterface@anonymous/Tests/ModelTest\.php\:17\:\:page\(\) never returns null so it can be removed from the return type\.$#'
-			identifier: return.unusedType
-			count: 1
-			path: Tests/ModelTest.php

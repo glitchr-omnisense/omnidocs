@@ -145,7 +145,7 @@ final class OnePage
         if (null !== $this->groupList) {
             return $this->groupList;
         }
-        $taken = array_flip(array_values($this->anchors()));
+        $taken = array_fill_keys(array_values($this->anchors()), true);
         $groups = [];
         foreach ($this->version->tree() as $node) {
             if (!$node->isSection()) {
@@ -153,7 +153,7 @@ final class OnePage
             }
             $paths = array_map(static fn (Node $page): string => $page->path, Node::flatten($node->children));
             // A section of a single page named as the page is that page alone, not a group of one.
-            if ([] === $paths || (1 === \count($paths) && 0 === strcasecmp($node->title, (string) ($this->version->node($paths[0])?->title ?? '')))) {
+            if ([] === $paths || (1 === \count($paths) && 0 === strcasecmp($node->title, (string) ($this->version->node($paths[0])->title ?? '')))) {
                 continue;
             }
             // Its anchor from its title ("group-navigation"), whatever its path ("group/navigation", "guides").
@@ -195,19 +195,22 @@ final class OnePage
     /**
      * The table of contents: the second-level headings, each with its third-level ones (down to $tocLevel).
      *
-     * @return list<array{heading: Heading, children: list<Heading>}>
+     * @return list<array{heading: Heading, children: list<Heading>, group?: bool}> group: true on a group's entry (with $groups)
      */
     public function toc(): array
     {
         if ([] !== $this->groups()) {
             return $this->groupedToc();
         }
+        /** @var list<array{heading: Heading, children: list<Heading>}> $toc */
         $toc = [];
         foreach ($this->headings() as $heading) {
             if (2 === $heading->level) {
                 $toc[] = ['heading' => $heading, 'children' => []];
             } elseif ($heading->level <= $this->tocLevel && [] !== $toc && $heading->level > 2) {
-                $toc[\count($toc) - 1]['children'][] = $heading;
+                $last = $toc[\count($toc) - 1];
+                $last['children'][] = $heading;
+                $toc[\count($toc) - 1] = $last;
             }
         }
 
@@ -222,6 +225,7 @@ final class OnePage
      */
     private function groupedToc(): array
     {
+        /** @var list<array{heading: Heading, children: list<Heading>, group?: bool}> $toc */
         $toc = [];
         $groupAt = [];
         foreach ($this->parts() as $part) {
@@ -231,7 +235,9 @@ final class OnePage
                     if (2 === $heading->level) {
                         $toc[] = ['heading' => $heading, 'children' => []];
                     } elseif ($heading->level > 2 && $heading->level <= $this->tocLevel && [] !== $toc && !($toc[\count($toc) - 1]['group'] ?? false)) {
-                        $toc[\count($toc) - 1]['children'][] = $heading;
+                        $last = $toc[\count($toc) - 1];
+                        $last['children'][] = $heading;
+                        $toc[\count($toc) - 1] = $last;
                     }
                 }
                 continue;
@@ -240,7 +246,9 @@ final class OnePage
                 $groupAt[$group['id']] = \count($toc);
                 $toc[] = ['heading' => new Heading(2, $group['id'], $group['title']), 'children' => [], 'group' => true];
             }
-            $toc[$groupAt[$group['id']]]['children'][] = new Heading(3, $part->anchor, $part->title);
+            $row = $toc[$groupAt[$group['id']]];
+            $row['children'][] = new Heading(3, $part->anchor, $part->title);
+            $toc[$groupAt[$group['id']]] = $row;
         }
 
         return $toc;

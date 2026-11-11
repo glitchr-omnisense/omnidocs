@@ -15,7 +15,7 @@ final class ModelTest extends TestCase
     public function testAVersionReadsItsPagesHomeFirstThenDepthFirst(): void
     {
         $source = new class implements \Omnidocs\SourceInterface {
-            public function home(): ?Node
+            public function home(): Node
             {
                 return new Node('', 'Home', 'README.md', 0);
             }
@@ -29,7 +29,7 @@ final class ModelTest extends TestCase
                 ];
             }
 
-            public function page(string $path, ?\Omnidocs\LinkerInterface $links = null): ?\Omnidocs\Model\Page
+            public function page(string $path, ?\Omnidocs\LinkerInterface $links = null): \Omnidocs\Model\Page
             {
                 return new \Omnidocs\Model\Page($path, $path, new Rendered('<p>'.$path.'</p>'));
             }

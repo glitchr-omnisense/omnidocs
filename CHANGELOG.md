@@ -7,6 +7,10 @@ Every version of omnisense/omnidocs, newest first ([Keep a Changelog](https://ke
 
 ### Changed
 
+- PHPStan max green again over the 2026-10-21 baseline, types only: `OnePage::toc()`'s documented
+  shape names the `group` key a group's entry has (with `$groups`), its entries built as typed rows;
+  the group anchors reserve the parts' anchors with `true` as `Headings::id()` takes them. Four
+  baseline entries fixed and removed.
 - The harness installs omnisense/contracts (its checkout under `OMNISENSE_CONTRACTS`, GitHub
   otherwise) as a development dependency, for the providers' usage policies, runs PHPStan
   (`phpstan`) on each package, names its entrypoint and runs on Docker's default bridge.

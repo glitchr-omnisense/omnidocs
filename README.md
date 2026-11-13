@@ -13,6 +13,41 @@ at an anchor). Each format is a provider that implements one `SourceInterface`:
 | [omnidocs/sphinx](https://github.com/glitchr-omnisense/omnidocs-sphinx) | Sphinx's JSON builder output and objects.inv | Requests v2.32.3 |
 | [omnidocs/doxygen](https://github.com/glitchr-omnisense/omnidocs-doxygen) | Doxygen's XML output | TinyXML-2 10.0.0 |
 
+## Installation and a first manual
+
+```sh
+composer require omnisense/omnidocs omnidocs/markdown
+```
+
+The core needs PHP 8.2 alone - no framework, no template engine, no network, no account. Each
+provider reads what its tool wrote, and the tool is the site's own: omnidocs/markdown and
+omnidocs/php need nothing beyond Composer; omnidocs/sphinx reads `sphinx-build -b json` (Python,
+Sphinx), omnidocs/doxygen Doxygen's XML (`GENERATE_XML=YES`), omnidocs/jsdoc `jsdoc -X` (Node). Their
+tests read that output from fixtures committed with them, so none of the tools is needed to run them.
+
+```php
+require __DIR__.'/vendor/autoload.php';
+
+use Omnidocs\Linking\RepositoryLinker;
+use Omnidocs\Markdown\MarkdownSourceFactory;
+use Omnidocs\Model\Version;
+use Omnidocs\OnePage;
+use Omnidocs\Search\SearchIndex;
+
+// A folder of Markdown files: here omnidocs/markdown's own README and CHANGELOG, installed with it.
+$source = (new MarkdownSourceFactory())->create(['root' => __DIR__.'/vendor/omnidocs/markdown', 'home' => 'README.md', 'pages' => ['changelog' => 'CHANGELOG.md']]);
+$version = new Version('1.x', $source);
+$links = new RepositoryLinker(fn (string $path, ?string $anchor) => '/docs/'.$path.($anchor ? '#'.$anchor : ''));
+
+foreach ($version->pages() as $node) {
+    echo $node->title, ': ', count($version->page($node->path, $links)->headings()), " headings\n";
+}
+$one = new OnePage($version, $links, '/docs');   // the whole manual as one page, its table of contents
+file_put_contents('search.json', (new SearchIndex())->onePage($one, 'Markdown')->toJson('en'));
+```
+
+The 1.x series follows semantic versioning; its changes are in [CHANGELOG.md](CHANGELOG.md).
+
 What the core adds over the sources:
 
 - `OnePage`: a version read as **one page** - the home, then every page as a part, its headings one
@@ -32,7 +67,7 @@ What the core adds over the sources:
   search button as Twig partials;
 - `Testing\SourceContractTests`: the conformance suite every source passes.
 
-It requires PHP 8.2 alone: no framework, no template engine.
+A site's manual, with versions, read at a commit and linked to its repository:
 
 ```php
 use Omnidocs\Linking\RepositoryLinker;

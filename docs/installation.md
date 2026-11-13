@@ -1,7 +1,7 @@
 # Installation and a manual in plain PHP
 
 ```sh
-composer require omnisense/omnidocs:1.x-dev omnidocs/markdown:1.x-dev
+composer require omnisense/omnidocs omnidocs/markdown
 ```
 
 The core needs PHP 8.2 and nothing else; each provider requires what its format needs
